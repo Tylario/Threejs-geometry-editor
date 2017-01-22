@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Plane Vertice Editor</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			font-family: Monospace;
+			font-size: 18;
+			background-color: #ffffff;
+			margin: 0px;
+			overflow: hidden;
+		}
+
+		#coords{
+			position: absolute;
+			left: 3%;
+			top: 8%;
+			width:20%;
+			bottom:5%;
+			overflow-y:scroll;
+			border:solid 1px black;
+		}
+		#setcoords{
+			position: absolute;
+			left: 3%;
+			top: 4%;
+			width:20%;
+			bottom:92%;
+		}
+
+		#info{
+			position: absolute;
+			right: 3%;
+			top: 5%;
+			width:20%;
+			bottom:80%;
+		}
+	</style>
+	<script src="./three-scripts.js"></script>
+</head>
+
+<body>
+
+<div id="setcoords" ><center><input type="submit" value="Get Code" id="getcode" onclick="getcode()"> </center></div>
+
+<div id="coords" >
+
+
+<span id="vertice"></span>
+			</div>
+<div id="info" >
+<center>Controls</center><br>
+Arrow keys - Select Vertice<br>
+WASD - Position Vertice<br>
+Space Bar - Toggle edit X&Y / Y&Z<br>
+Drag Mouse - Orbit Plane<br>
+Scroll in/out - Zoom in/out<br><br><br> X:
+<span id="coordx"></span>, Y:
+ <span id="coordy"></span>, Z:
+ <span id="coordz"></span><br><br><br><br><br><small>*Do not mess with these Unless you are going to set length & height completely.</small><br>Height
+ <input type="button" id="height" onclick="minusheight()" value=" - ">
+ <span id="height2"></span>
+ <input type="button" id="height3" onclick="addheight()" value=" + "><br>
+ Length
+ <input type="button" id="length" onclick="minusLength()" value=" - ">
+ <span id="length2"></span>
+ <input type="button" id="length3" onclick="addLength()" value=" + "><br><br>
+ <center><input type="submit" id="derp" onclick="init()" value="Set"></center>
+</div>
+	<script>
+		importScripts();
+
+		function $(id) {
+			return document.getElementById(id);
+		}
+
+		var rootEl;
+		var container;
+		var camera, scene, renderer;
+		var positions = [];
+
+		var MAX_HEIGHT = 80;
+		var MAX_LENGTH = 80;
+
+		var length = 10;
+		var height = 10;
+		var isPlane = false;
+
+		function mutateAxis (variable, options) {
+			var focusId = options.focusId;
+			var blurId = options.blurId;
+			var maxValue = options.maxValue;
+			var minValue = options.minValue;
+
+			var isMax = typeof maxValue === "undefined" ? false : true;
+			var allowed = isMax ? variable < maxValue : variable > minValue;
+			var addValue = isMax ? 1 : -1;
+
+			if (allowed) {
+				variable = variable + addValue;
+				$(focusId).innerHTML = variable;
+				$(blurId).blur();
+			}
+
+			return variable;
+		}
+
+		function addheight() {
+			height = mutateAxis(height, {
+				focusId: "height2",
+				blurId: "height3",
+				maxValue: MAX_HEIGHT
+			});
+		}
+
+		function minusheight() {
+			height = mutateAxis(height, {
+				focusId: "height2",
+				blurId: "height",
+				minValue: 0
+			});
+		}
+
+		function addLength() {
+			length = mutateAxis(length, {
+				focusId: "length2",
+				blurId: "length3",
+				maxValue: MAX_LENGTH
+			});
+		}
+
+		function minusLength() {
+			length = mutateAxis(length, {
+				focusId: "length2",
+				blurId: "length",
+				minValue: 0
+			});
+		}
+
+		function writePointValue (point) {
+			$("coordx").innerText = formatPoint(point.x);
+			$("coordy").innerText = formatPoint(point.y);
+			$("coordz").innerText = formatPoint(point.z);
+		}
+
+		function positionCube(cube, point) {
+			cube.position.x = point.x;
+			cube.position.y = point.y;
+			cube.position.z = point.z;
+		}
+
+		$("length2").innerHTML = 10;
+		$("height2").innerHTML = 10;
+
+		// see if we have previous settings
+
+		var geometry;
+		var initialInit = true;
+
+		function init() {
+			$("derp").blur();
+			var sure = initialInit ? true : confirm("Setting length and height will reset the plane, are you sure you want to set?");
+			if (!sure) return;
+
+			isPlane = true;
+			if (rootEl) {
+				document.body.removeChild(rootEl);
+			}
+			rootEl = container = document.createElement('div');
+			document.body.appendChild(container);
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+			camera.position.z = -(length + height / 3);
+			camera.position.y = 0;
+			camera.position.x = -3;
+
+			scene.add(camera);
+
+			scene.add(new THREE.AmbientLight(0xf0f0f0));
+			var light = new THREE.SpotLight(0xffffff, 0.15);
+			light.position.set(-25, 20, -30);
+			light.castShadow = true;
+			light.shadow = new THREE.LightShadow(new THREE.PerspectiveCamera(70, 1, 200, 2000));
+			light.shadow.bias = -0.000222;
+			light.shadow.mapSize.width = 1024;
+			light.shadow.mapSize.height = 1024;
+			scene.add(light);
+			spotlight = light;
+
+			var axis = new THREE.AxisHelper();
+			axis.position.set(-500, -500, -500);
+			scene.add(axis);
+
+			renderer = new THREE.WebGLRenderer({
+				antialias: true
+			});
+			renderer.setClearColor(0xffffff);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			container.appendChild(renderer.domElement);
+
+			// Controls
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls.damping = 0.2;
+			controls.addEventListener('change', render);
+			controls.enablePan = false;
+			controls.minDistance = 1.5;
+			controls.maxDistance = (length * height) + 20;
+			transformControl = new THREE.TransformControls(camera, renderer.domElement);
+			transformControl.addEventListener('change', render);
+
+			var cubegeometry = new THREE.SphereGeometry(0.3, 0.3, 10);
+
+			var cubematerial = new THREE.MeshPhongMaterial({
+				color: 0xff0000,
+				wireframe: false
+			});
+
+			var cube = new THREE.Mesh(cubegeometry, cubematerial);
+			cubematerial.transparent = true;
+			cubematerial.opacity = 0.4;
+			geometry = new THREE.PlaneGeometry(length, height, length, height);
+
+			var gunmaterial = new THREE.MeshPhongMaterial({
+				color: 0x000,
+				wireframe: true
+			});
+
+			var gun = new THREE.Mesh(geometry, gunmaterial);
+			gun.material.side = THREE.DoubleSide;
+
+			var point = ((length + 1) * (height));
+			var change = 0;
+			var turn = 0;
+
+			scene.add(cube);
+			scene.add(gun);
+
+			writePointValue(geometry.vertices[point]);
+			positionCube(cube, geometry.vertices[point]);
+
+			function moveGridPoint (options) {
+				var axis = options.axis;
+				var addAmount = options.add ? 0.1 : -0.1;
+
+				geometry.vertices[point][axis] = geometry.vertices[point][axis] + addAmount;
+				geometry.verticesNeedUpdate = true;
+				positionCube(cube, geometry.vertices[point]);
+				writePointValue(geometry.vertices[point]);
+			}
+
+			function moveFocusPoint (options) {
+				var condition = options.condition;
+				var value = options.value;
+
+				if (condition) {
+					point = value;
+					positionCube(cube, geometry.vertices[point]);
+					writePointValue(geometry.vertices[point]);
+				}
+			}
+
+			document.onkeydown = function myFunction() {
+				switch (event.keyCode) {
+					case 87: //up
+						moveGridPoint({ axis: 'y', add: true });
+						break;
+
+					case 83: //down
+						moveGridPoint({ axis: 'y', add: false });
+						break;
+
+					case 65: //left
+						if (change == 0) {
+							moveGridPoint({ axis: 'x', add: true });
+						} else {
+							moveGridPoint({ axis: 'z', add: false });
+						}
+						break;
+
+					case 68: //right
+						if (change == 0) {
+							moveGridPoint({ axis: 'x', add: false });
+						} else {
+							moveGridPoint({ axis: 'z', add: true });
+						}
+						break;
+
+					case 38: //up
+						moveFocusPoint ({
+							condition: point > length,
+							value: point - (length + 1)
+						});
+						break;
+
+					case 40: //down
+						moveFocusPoint ({
+							condition: point < (length + 1) * (height + 1) - (1 + length),
+							value: point + (length + 1)
+						});
+						break;
+
+					case 37: //left
+						moveFocusPoint ({
+							condition: point < ((length + 1) * (height + 1) - 1),
+							value: point + 1
+						});
+						break;
+
+					case 39: //right
+						moveFocusPoint ({
+							condition: point > 0,
+							value: point - 1
+						});
+						break;
+
+					case 32: //space
+						if (change == 0) {
+							change = 1
+						} else {
+							change = 0
+						};
+						if (change == 1) {
+							camera.position.z = -3;
+							camera.position.y = 0;
+							camera.position.x = -(length + height / 3);
+						} else {
+							camera.position.z = -(length + height / 3);
+							camera.position.y = 0;
+							camera.position.x = -3;
+
+						}
+						break;
+				}
+			}
+
+			initialInit = false;
+			animate();
+		}
+
+		function getcode() {
+			var html = '';
+			if (isPlane == true) {
+				for (var i = 0; i < (length + 1) * (height+1); i++) {
+					html = html +
+						"geometry.vertices[" + i + "].x =  " + formatPoint(geometry.vertices[i].x) + ";<br>" +
+						"geometry.vertices[" + i + "].y =  " + formatPoint(geometry.vertices[i].y) + ";<br>" +
+						"geometry.vertices[" + i + "].z =  " + formatPoint(geometry.vertices[i].z) + ";<br><br>";
+				}
+			}
+			$("coords").innerHTML = html;
+			$("getcode").blur();
+		}
+
+		function setCoords() {
+			$("vertice").innerHTML = $("vertice").innerHTML + 1;
+		}
+
+		function formatPoint(val) {
+			return Math.floor(val * 10) / 10;
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+			render();
+			controls.update();
+			transformControl.update();
+		}
+
+		function render() {
+			renderer.render(scene, camera);
+		}
+	</script>
+</body>
+</html>
