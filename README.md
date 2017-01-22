@@ -4,17 +4,19 @@ Three.js Geometry Editor
 ## Summary
 This is a visual three dimensional plane editor for three.JS.  You can customize a size plane and easily edit each individual vertice and export the code.
 
+[Try it out](https://tylario.github.io/Threejs-geometry-editor/)
+
 ## Usage
 To begin select a size using the Length & height button. Ex: 10 by 15, 2 by 4, 8 by 8
 
-Next click set and confirm to create the plane. 
+Next click set and confirm to create the plane.
 
 You will see a red dot over the selected vertice
 
 To select a different vertice use the arrow keys (left, right, up & down)
 
 To position the vertice use WASD  
-* W is up 
+* W is up
 * S is down
 * A is left (either on X axis or Z axis)
 * D ir right (either on X axis or Z axis)
