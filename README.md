@@ -36,5 +36,4 @@ var material = new THREE.MeshPhongMaterial({ color: 0x000, wireframe: true });
 
 var mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
-
 ```
