@@ -1,8 +1,9 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+<link rel="icon" type="image/png" href="images/cube.png"/>
+
 	<title>Plane Vertice Editor</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
@@ -32,6 +33,9 @@
 			bottom:92%;
 		}
 
+		
+		
+		
 		#info{
 			position: absolute;
 			right: 3%;
@@ -44,11 +48,9 @@
 </head>
 
 <body>
-
 <div id="setcoords" ><center><input type="submit" value="Get Code" id="getcode" onclick="getcode()"> </center></div>
 
 <div id="coords" >
-
 
 <span id="vertice"></span>
 			</div>
@@ -61,14 +63,20 @@ Drag Mouse - Orbit Plane<br>
 Scroll in/out - Zoom in/out<br><br><br> X:
 <span id="coordx"></span>, Y:
  <span id="coordy"></span>, Z:
- <span id="coordz"></span><br><br><br><br><br><small>*Do not mess with these Unless you are going to set length & height completely.</small><br>Height
+ <span id="coordz"></span><br><br><br><br><br><small>*Do not mess with these Unless you are going to set length & height completely.</small><br>
+ 
+ 
+ <br>Height
  <input type="button" id="height" onclick="minusheight()" value=" - ">
  <span id="height2"></span>
  <input type="button" id="height3" onclick="addheight()" value=" + "><br>
  Length
  <input type="button" id="length" onclick="minusLength()" value=" - ">
  <span id="length2"></span>
- <input type="button" id="length3" onclick="addLength()" value=" + "><br><br>
+ <input type="button" id="length3" onclick="addLength()" value=" + "><br><br><small> <input type="button" onclick="toggle()" value="Toggle Wireframe"> <span id="potato" ></span></small>
+<br><br>
+ 
+ 
  <center><input type="submit" id="derp" onclick="init()" value="Set"></center>
 </div>
 	<script>
@@ -89,7 +97,20 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 		var length = 10;
 		var height = 10;
 		var isPlane = false;
-
+		
+		var toggleWireframe = false;
+		var color;
+		toggle();
+		
+		function toggle(){
+		if(toggleWireframe == false){
+		toggleWireframe = true; $("potato").innerText = "wireframe:true"; color = 0x000000;
+		}else{
+		toggleWireframe = false; $("potato").innerText = "wireframe:false";  color = 0x101fF8;
+		}
+		
+		}
+		
 		function mutateAxis (variable, options) {
 			var focusId = options.focusId;
 			var blurId = options.blurId;
@@ -114,6 +135,7 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 				focusId: "height2",
 				blurId: "height3",
 				maxValue: MAX_HEIGHT
+				
 			});
 		}
 
@@ -181,8 +203,8 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 			scene.add(camera);
 
 			scene.add(new THREE.AmbientLight(0xf0f0f0));
-			var light = new THREE.SpotLight(0xffffff, 0.15);
-			light.position.set(-25, 20, -30);
+			var light = new THREE.SpotLight(0xffffff, 2);
+			light.position.set(-2, 20, -30);
 			light.castShadow = true;
 			light.shadow = new THREE.LightShadow(new THREE.PerspectiveCamera(70, 1, 200, 2000));
 			light.shadow.bias = -0.000222;
@@ -190,6 +212,17 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 			light.shadow.mapSize.height = 1024;
 			scene.add(light);
 			spotlight = light;
+
+
+var light2 = new THREE.SpotLight(0xffffff, 2);
+			light2.position.set(-2, 20, 30);
+			light2.castShadow = true;
+			light2.shadow = new THREE.LightShadow(new THREE.PerspectiveCamera(70, 1, 200, 2000));
+			light2.shadow.bias = -0.00222;
+			light2.shadow.mapSize.width = 1024;
+			light2.shadow.mapSize.height = 1024;
+			scene.add(light2);
+			spotlight = light2;
 
 			var axis = new THREE.AxisHelper();
 			axis.position.set(-500, -500, -500);
@@ -214,42 +247,76 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 			transformControl = new THREE.TransformControls(camera, renderer.domElement);
 			transformControl.addEventListener('change', render);
 
-			var cubegeometry = new THREE.SphereGeometry(0.3, 0.3, 10);
+			var cubegeometry = new THREE.SphereGeometry(0.3, 20, 20);
 
-			var cubematerial = new THREE.MeshPhongMaterial({
+			var cubematerial = new THREE.MeshBasicMaterial({
 				color: 0xff0000,
-				wireframe: false
+				wireframe: false,
+				shading: THREE.flatShading,
+				//side: THREE.BackSide
+
 			});
 
 			var cube = new THREE.Mesh(cubegeometry, cubematerial);
 			cubematerial.transparent = true;
 			cubematerial.opacity = 0.4;
+
+			
 			geometry = new THREE.PlaneGeometry(length, height, length, height);
 
+		
+
 			var gunmaterial = new THREE.MeshPhongMaterial({
-				color: 0x000,
-				wireframe: true
+				//color: 0x000,
+				color: color,
+				//wireframe: true
+				wireframe: toggleWireframe,
+				shading: THREE.FlatShading,
 			});
 
 			var gun = new THREE.Mesh(geometry, gunmaterial);
 			gun.material.side = THREE.DoubleSide;
+		
 
 			var point = ((length + 1) * (height));
 			var change = 0;
 			var turn = 0;
 
 			scene.add(cube);
+//ENTER EXPORTED CODE HERE TO EDIT//			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+
+
+//ENTER EXPORTED CODE HERE TO EDIT//			
+
 			scene.add(gun);
 
 			writePointValue(geometry.vertices[point]);
 			positionCube(cube, geometry.vertices[point]);
 
 			function moveGridPoint (options) {
+
 				var axis = options.axis;
 				var addAmount = options.add ? 0.1 : -0.1;
 
 				geometry.vertices[point][axis] = geometry.vertices[point][axis] + addAmount;
 				geometry.verticesNeedUpdate = true;
+
 				positionCube(cube, geometry.vertices[point]);
 				writePointValue(geometry.vertices[point]);
 			}
@@ -344,6 +411,8 @@ Scroll in/out - Zoom in/out<br><br><br> X:
 		}
 
 		function getcode() {
+		
+		
 			var html = '';
 			if (isPlane == true) {
 				for (var i = 0; i < (length + 1) * (height+1); i++) {
